@@ -1,4 +1,6 @@
-﻿using System;
+﻿using GestionAgricole.App.Database;
+using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -11,24 +13,48 @@ namespace GestionAgricole
     {
         #region Attributs, Propriétés et Constructeur
         // Attributs
-        private int numeroParcelle;
-        private double surface;
-        private string nomParcelle;
-        private string coordonnées;
+        private int _numeroParcelle;
+        private double _surface;
+        private string _nomParcelle;
+        private string _coordonnées;
 
         // Propriétés
-        public int NumeroParcelle { get => NumeroParcelle; set => NumeroParcelle = value; }
-        public double Surface { get => Surface; set => Surface = value; }
-        public string NomParcelle { get => NomParcelle; set => NomParcelle = value; }
-        public string Coordonnées { get => Coordonnées; set => Coordonnées = value; }
-
-        //Constructeur
-        public Parcelle(int numeroDeParcelle, double surfaceDeParcelle, string nomDeLaParcelle, string coordonnéesParcelle)
+        public int NumeroParcelle { get => _numeroParcelle; set => _numeroParcelle = value; }
+        public double Surface { get => _surface; set => _surface = value; }
+        public string NomParcelle { get => _nomParcelle; set => _nomParcelle = value; }
+        public string Coordonnées { get => _coordonnées; set => _coordonnées = value; }
+     
+        public static List<Parcelle> ParcelleReader()
         {
-            numeroParcelle = numeroDeParcelle;
-            surface = surfaceDeParcelle;
-            nomParcelle = nomDeLaParcelle;
-            coordonnées = coordonnéesParcelle;
+            Db db = Db.GetDataBase();
+            string query = "SELECT * FROM Parcelle";
+            List<Parcelle> result = new List<Parcelle>();
+            try
+            {
+                db.Connection.Open();
+                MySqlCommand cmd = new MySqlCommand(query, db.Connection);
+                MySqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    result.Add(new Parcelle
+                    {
+                        NumeroParcelle = reader.GetInt32("no_parcelle"),
+                        Surface = reader.GetDouble("surface"),
+                        NomParcelle = reader.GetString("nom_parcelle"),
+                        Coordonnées = reader.GetString("coordonnees"),
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Source + " : " + ex.Message);
+            }
+            finally
+            {
+                db.Connection.Close();
+            }
+            return result;
         }
         #endregion
     }
